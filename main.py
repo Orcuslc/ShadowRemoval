@@ -18,9 +18,11 @@ class ShadowRemoval_Client:
 	def __init__(self, img):
 		self.img = img
 		self.rows, self.cols = get_size(img)
-		self.mask_s = np.zeros((self.rows, self.cols), dtype = np.uint8)
-		self.mask_l = np.zeros((self.rows, self.cols), dtype = np.uint8)
-		self.mask_shadow = np.zeros((self.rows, self.cols), dtype = np.uint8)
+		self.mask_s = np.zeros((self.rows, self.cols), dtype = np.uint)
+		self.mask_l = np.zeros((self.rows, self.cols), dtype = np.uint)
+		self.mask_shadow = np.zeros((self.rows, self.cols), dtype = np.uint)
+
+		self._SHADOW = 1
 
 	def init_seed(self, event, x, y, flags, param):
 		self._drawing = False
@@ -40,6 +42,8 @@ class ShadowRemoval_Client:
 			if self._drawing == True:
 				self._drawing = False
 				cv2.circle(self.img, (x, y), self._thickness, self._WHITE, -1)
+
+		self.mask_s[y, x] = self._SHADOW
 
 	def _detection(self):
 		
