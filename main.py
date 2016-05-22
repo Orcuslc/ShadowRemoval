@@ -37,8 +37,8 @@ class ShadowRemoval_Client:
 		if event == cv2.EVENT_RBUTTONDOWN:
 			if self._drawing == True:
 				cv2.circle(self.img, (x, y), self._thickness, self._WHITE, -1)
-				self.mask_s[y-self._thickness:y-self._thickness, x-self._thickness:x+self._thickness] = self._SHADOW
-				self._shadow_seed = self.img[y-self._thickness:y-self._thickness, x-self._thickness:x+self._thickness].copy()
+				self.mask_s[y-self._thickness:y+self._thickness, x-self._thickness:x+self._thickness] = self._SHADOW
+				self._shadow_seed = self.img[y-self._thickness:y+self._thickness, x-self._thickness:x+self._thickness].copy()
 
 		elif event == cv2.EVENT_RBUTTONUP:
 			if self._drawing == True:
@@ -59,8 +59,8 @@ class ShadowRemoval_Client:
 
 	def _get_dist(self):
 		if self._drawn == True:
-			vf = np.vectorize(self._calc_invariant_distance)
-			self._dist = vf(self.img, self._shadow_seed.sum(axis = 0).sum(axis = 0)/(self._shadow_seed.size / 3))
+			mid = self._shadow_seed.sum(axis = 0).sum(axis = 0)/(self._shadow_seed.size / 3)
+			self._dist = np.asarray([[self._calc_invariant_distance(pixel, mid) for pixel in row] for row in self.img])
 
 	def _region_growing(self):
 		pass
@@ -87,9 +87,9 @@ if __name__ == '__main__':
 			break
 		elif k == ord('n'):
 			SR._get_dist()
-			print(count)
-		
-	print(SR._dist)
+			# i = len(list(np.where(SR._dist < 0.00005))[0])
+			# print(i)
+
 	cv2.destroyAllWindows()
 
 
