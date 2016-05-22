@@ -19,11 +19,13 @@ class ShadowRemoval_Client:
 		self.img = np.asarray(img, np.float32) # The image to be handled;
 		self.img2 = img # The real image;
 		self.rows, self.cols = get_size(img)
-		self.mask_s = np.zeros((self.rows, self.cols), dtype = np.uint) # The area that is entirely inside the shadow;
-		self.mask_l = np.zeros((self.rows, self.cols), dtype = np.uint) # The area that is entirely outside the shsdow;
+		self.mask = np.zeros((self.rows, self.cols), dtype = np.uint) # In this class, we use just one mask to contain the Ms and Ml in the paper; In the mask, the places where the value = self._SHADOW belongs to Ms, and other pixels belongs to Ml;
+		self.trimap = np.zeros((self.rows, self.cols), dtype = np.uint) # The trimap containing info that whether a pixel is inside the shadow, outside the shadow, or unknown;
 		self.mask_shadow = np.zeros((self.rows, self.cols), dtype = np.uint) # The area where shadow removal is required;
 
 		self._SHADOW = 1 # The flag of shadow;
+		self._LIT = 0 # The flag of lit;
+		self._UNKNOWN = -1 # The flag of unknown;
 		self._threshold = 0.1;
 		self._drawing = True # The flag of drawing;
 		self._drawn = False # The status of whether seed initialise is finished;
@@ -37,7 +39,7 @@ class ShadowRemoval_Client:
 		if event == cv2.EVENT_RBUTTONDOWN:
 			if self._drawing == True:
 				cv2.circle(self.img, (x, y), self._thickness, self._WHITE, -1)
-				self.mask_s[y-self._thickness:y+self._thickness, x-self._thickness:x+self._thickness] = self._SHADOW
+				self.mask[y-self._thickness:y+self._thickness, x-self._thickness:x+self._thickness] = self._SHADOW
 				self._shadow_seed = self.img[y-self._thickness:y+self._thickness, x-self._thickness:x+self._thickness].copy()
 
 		elif event == cv2.EVENT_RBUTTONUP:
@@ -61,6 +63,9 @@ class ShadowRemoval_Client:
 		if self._drawn == True:
 			mid = self._shadow_seed.sum(axis = 0).sum(axis = 0)/(self._shadow_seed.size / 3)
 			self._dist = np.asarray([[self._calc_invariant_distance(pixel, mid) for pixel in row] for row in self.img])
+
+	def _calc_standard_deviation(self, M):
+		return np.
 
 	def _region_growing(self):
 		pass
