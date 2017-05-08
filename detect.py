@@ -1,13 +1,15 @@
 import numpy as np
 import cv2
 import time
+import sys  
+sys.setrecursionlimit(1000000)
 from main import timeit, get_size
 
 ### Configurations ###
 DOWNSAMPLE = 2
 RATE = 0.5
 CANNY = (50, 150)
-COL_SEED = 50
+COL_SEED = 200
 ######################
 
 def downsample(img, rate = RATE):
@@ -19,6 +21,7 @@ gray = lambda img: cv2.cvtColsbor(img, cv2.COLOR_BGR2GRAY)
 dist = lambda x, y: sum((x-y)**2)
 
 def detect(img, seed):
+	seed = (seed[1], seed[0])
 	shape = get_size(img)
 	[Ms, Ml, Mshadow] = [np.zeros(shape, dtype=np.uint8) for i in range(3)]
 	tmp = np.array(img)
@@ -26,12 +29,15 @@ def detect(img, seed):
 		img_ds = downsample(tmp)
 		tmp = img_ds
 	seed_ds = (int(seed[0]*RATE**DOWNSAMPLE), int(seed[1]*RATE**DOWNSAMPLE))
+	shape_ds = (int(shape[0]*RATE**DOWNSAMPLE), int(shape[1]*RATE**DOWNSAMPLE))
 	edges = cv2.Canny(cv2.GaussianBlur(img, (3, 3), 0), CANNY[0], CANNY[1])
 	seeds = np.zeros(get_size(img_ds))
 	seeds[seed_ds] = 1
 	vis = np.zeros(get_size(img_ds))
 	directions = ((1, 0), (0, 1), (-1, 0), (0, -1))
 	def search(point):
+		if point[0] < 0 or point[1] < 0 or point[0] >= shape_ds[0] or point[1] >= shape_ds[1]:
+			return
 		if vis[point]:
 			return
 		elif edges[point]:
@@ -42,7 +48,7 @@ def detect(img, seed):
 			for i in range(4):
 				search((point[0]+directions[i][0], point[1]+directions[i][1]))
 	search(seed_ds)
-	return seeds
+	
 
 def click(event, x, y, flags, param):
 	if event == cv2.EVENT_LBUTTONDBLCLK:
