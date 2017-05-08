@@ -65,7 +65,8 @@ class ShadowRemoval_Client:
 			self._dist = np.asarray([[self._calc_invariant_distance(pixel, mid) for pixel in row] for row in self.img])
 
 	def _calc_standard_deviation(self, M):
-		return np.
+		# return np.
+		pass
 
 	def _region_growing(self):
 		pass
