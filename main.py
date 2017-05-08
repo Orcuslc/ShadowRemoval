@@ -3,7 +3,7 @@ import cv2
 import time
 
 def get_size(img):
-	return list(img.shape)[:2]
+	return tuple(list(img.shape)[:2])
 
 def timeit(func):
 	def wrapper(*args, **kw):
