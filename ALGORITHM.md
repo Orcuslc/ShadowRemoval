@@ -20,4 +20,12 @@
 5. Apply image painting along a thin border
 
 ## Detection
-Outcome: 
+1. Seed growth
+	1. Indicate a initial point, which lies on the surface that has both shadowed and lit parts
+	2. Using iterative process to add nearby pixels that have similar color, and not cross strong edges
+	3. The process is done on a downsampled image
+2. Compute Ms
+	1. Find pixels on the same surface of the seed
+		1. Compute the invariant distance of each pixel and the median color of seed
+		2. Consider the pixels having a small distance are on the same surface
+	2. 
