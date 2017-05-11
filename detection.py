@@ -10,9 +10,9 @@ DOWNSAMPLE = 2
 SEED_ITER = 4
 RATE = 0.5
 CANNY = (150, 300)
-SEED_TOL = 200
+SEED_TOL = 400
 search_directions = ((1, 0), (0, 1), (-1, 0), (0, -1))
-MS_TOL = 300
+MS_TOL = 1000
 ######################
 
 downsample = lambda img, rate = RATE: cv2.pyrDown(img, np.array(img[::int(1/rate),::int(1/rate),:], dtype=np.uint8), (int(img.shape[1]*rate), int(img.shape[0]*rate)))
@@ -75,18 +75,24 @@ def compute_mask(img, seed_mask, seed_loc):
 			return
 		if point[0] < 0 or point[1] < 0 or point[0] >= size[0] or point[1] >= size[1]:
 			return
+		if visited[point] == 1:
+			return
 		if Ms[point] == 1:
+			visited[point] = 1
 			for i in range(4):
 				search((point[0]+search_directions[i][0], point[1]+search_directions[i][1]))
-		elif dist(seed_color, img[point]) < MS_TOL and surface[point] == 1:
-			Ms[point] = 1
-			Ml[point] = 0
-			sd_ms = sum(np.std(img[np.where(Ms == 1)], axis = 0))
-			sd_ml = sum(np.std(img[np.where(Ml == 1)], axis = 0))
+		elif dist(seed_color, img[point]) < MS_TOL:
+			visited[point] = 1
+			if surface[point] == 1:
+				Ms[point] = 1
+				Ml[point] = 0
+				sd_ms = sum(np.std(img[np.where(Ms == 1)], axis = 0))
+				sd_ml = sum(np.std(img[np.where(Ml == 1)], axis = 0))
 			for i in range(4):
 				search((point[0]+search_directions[i][0], point[1]+search_directions[i][1]))
 	search(seed_loc)
-	return surface
+	
+	return Ml
 
 def dbclick(event, x, y, flags, param):
 	global seed_loc
@@ -98,7 +104,8 @@ if __name__ == '__main__':
 	cv2.namedWindow('input')
 	cv2.setMouseCallback('input', dbclick)
 	cv2.imshow('input', img)
-	cv2.moveWindow('input',img.shape[1]+10,90)
+	cv2.moveWindow('input', img.shape[1]+100, 100)
+	cv2.moveWindow('output', img.shape[1]-100, 200)
 	cv2.namedWindow('seed')
 	while(1):
 		cv2.imshow('input',img)
